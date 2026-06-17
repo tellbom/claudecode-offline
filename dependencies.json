@@ -1,0 +1,95 @@
+{
+  "generated": "2026-06-17",
+  "target": {
+    "host": "192.168.222.138",
+    "user": "fzq",
+    "os": "Kylin Linux Advanced Server V11 (Swan25)",
+    "arch": "x86_64",
+    "libc": "glibc 2.38"
+  },
+  "installed": {
+    "claudePath": "/home/fzq/.local/bin/claude",
+    "version": "2.1.179 (Claude Code)",
+    "binarySha256": "6d8422de5ac8ac2077b20e2a6307083f85609aaf45f8c783ec2f7d71e8781e70"
+  },
+  "packages": [
+    {
+      "name": "@anthropic-ai/claude-code-linux-x64",
+      "version": "2.1.179",
+      "required": true,
+      "role": "native Claude Code Linux x64 binary package",
+      "path": "offline_bundle/npm-tarballs/anthropic-ai-claude-code-linux-x64-2.1.179.tgz",
+      "source": "https://registry.npmjs.org/@anthropic-ai/claude-code-linux-x64/-/claude-code-linux-x64-2.1.179.tgz",
+      "mirrorUsed": "https://registry.npmmirror.com/@anthropic-ai/claude-code-linux-x64/-/claude-code-linux-x64-2.1.179.tgz",
+      "sizeBytes": 75999335,
+      "sha1": "160ec040aedbd8320205e96b9e0fe98fa009d902",
+      "sha256": "5da561d9c7abd1d826eb72afb0f37fbba0f247b8686efef3c3c0c9943af0dab1",
+      "contents": ["package/claude", "package/package.json", "package/LICENSE.md", "package/README.md"]
+    },
+    {
+      "name": "@anthropic-ai/claude-code",
+      "version": "2.1.179",
+      "required": true,
+      "role": "npm wrapper metadata and fallback installer",
+      "path": "offline_bundle/npm-tarballs/anthropic-ai-claude-code-2.1.179.tgz",
+      "source": "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-2.1.179.tgz",
+      "sizeBytes": 18712,
+      "sha1": "e64d876dc0b43eda5a250aae3aff897613fdc544",
+      "sha256": "41f0f4dfe1a10360eb43798e7decd0bdbe6b90a74a4d3017d23e7720fa9adaaa"
+    },
+    {
+      "name": "node",
+      "version": "20.18.2",
+      "required": false,
+      "role": "optional Node.js/npm runtime for npm-wrapper fallback",
+      "path": "offline_bundle/node/node-v20.18.2-linux-x64.tar.xz",
+      "source": "https://nodejs.org/dist/v20.18.2/node-v20.18.2-linux-x64.tar.xz",
+      "mirrorUsed": "https://npmmirror.com/mirrors/node/v20.18.2/node-v20.18.2-linux-x64.tar.xz",
+      "sizeBytes": 25826956,
+      "sha1": "2780b1d74e47b304784737cf12342c885b19a733",
+      "sha256": "4e50f727ae09bdafecf2322c72faf7cd82bf3b8851a16b8bb63974e0d8d6eceb",
+      "provides": ["node", "npm", "npx", "corepack"]
+    }
+  ],
+  "releaseMetadata": [
+    {
+      "name": "manifest.json",
+      "path": "offline_bundle/claude-code-2.1.179/manifest.json",
+      "source": "https://downloads.claude.ai/claude-code-releases/2.1.179/manifest.json",
+      "sizeBytes": 1467,
+      "sha256": "2cc7a0f88e3cb1cd6078b41a75b7a4c7d9c415d7517b07a50c31666a05b8767f"
+    },
+    {
+      "name": "manifest.json.sig",
+      "path": "offline_bundle/claude-code-2.1.179/manifest.json.sig",
+      "source": "https://downloads.claude.ai/claude-code-releases/2.1.179/manifest.json.sig",
+      "sizeBytes": 833,
+      "sha256": "1fd9aff022d8c5bf8ade20d14965f3c896bd1364f35b7238d94f743f4e1f7be1"
+    },
+    {
+      "name": "claude-code.asc",
+      "path": "offline_bundle/claude-code-2.1.179/claude-code.asc",
+      "source": "https://downloads.claude.ai/keys/claude-code.asc",
+      "fingerprint": "31DD DE24 DDFA B679 F42D 7BD2 BAA9 29FF 1A7E CACE",
+      "sizeBytes": 1688,
+      "sha256": "bd70a5e4a268002704024ceba7f8446024114e94f3f0bdd11c23a9e592be81c6"
+    }
+  ],
+  "installScripts": [
+    {
+      "path": "offline_bundle/scripts/install_claude_offline.sh",
+      "sizeBytes": 2838,
+      "sha256": "9fe4fa2d4ce22c39c76a31126b5037eabfbbc4d74520f9a81da0d64dd9885ffe",
+      "command": "offline_bundle/scripts/install_claude_offline.sh"
+    }
+  ],
+  "offlineEnvironment": {
+    "DISABLE_AUTOUPDATER": "1",
+    "DISABLE_UPDATES": "1",
+    "DISABLE_TELEMETRY": "1",
+    "DISABLE_ERROR_REPORTING": "1",
+    "DISABLE_FEEDBACK_COMMAND": "1",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL": "1"
+  }
+}

@@ -1,0 +1,77 @@
+Claude Code Offline Bundle Manifest
+Generated: 2026-06-17
+Target: Kylin Linux Advanced Server V11 x86_64 glibc
+Claude Code version: 2.1.179
+
+Installed on target VM:
+- user: fzq
+- path: /home/fzq/.local/bin/claude
+- version output: 2.1.179 (Claude Code)
+- binary sha256: 6d8422de5ac8ac2077b20e2a6307083f85609aaf45f8c783ec2f7d71e8781e70
+
+Required bundle files:
+
+1. offline_bundle/npm-tarballs/anthropic-ai-claude-code-linux-x64-2.1.179.tgz
+   Purpose: Claude Code Linux x64 native package. Contains package/claude.
+   Source: https://registry.npmjs.org/@anthropic-ai/claude-code-linux-x64/-/claude-code-linux-x64-2.1.179.tgz
+   Mirror used for target install: https://registry.npmmirror.com/@anthropic-ai/claude-code-linux-x64/-/claude-code-linux-x64-2.1.179.tgz
+   Size: 75999335 bytes
+   SHA1: 160ec040aedbd8320205e96b9e0fe98fa009d902
+   SHA256: 5da561d9c7abd1d826eb72afb0f37fbba0f247b8686efef3c3c0c9943af0dab1
+
+2. offline_bundle/npm-tarballs/anthropic-ai-claude-code-2.1.179.tgz
+   Purpose: Claude Code npm wrapper package and postinstall metadata.
+   Source: https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-2.1.179.tgz
+   Size: 18712 bytes
+   SHA1: e64d876dc0b43eda5a250aae3aff897613fdc544
+   SHA256: 41f0f4dfe1a10360eb43798e7decd0bdbe6b90a74a4d3017d23e7720fa9adaaa
+
+3. offline_bundle/node/node-v20.18.2-linux-x64.tar.xz
+   Purpose: Optional Node.js/npm runtime for npm-wrapper fallback installation.
+   Official source: https://nodejs.org/dist/v20.18.2/node-v20.18.2-linux-x64.tar.xz
+   Mirror used locally: https://npmmirror.com/mirrors/node/v20.18.2/node-v20.18.2-linux-x64.tar.xz
+   Size: 25826956 bytes
+   SHA1: 2780b1d74e47b304784737cf12342c885b19a733
+   SHA256: 4e50f727ae09bdafecf2322c72faf7cd82bf3b8851a16b8bb63974e0d8d6eceb
+
+4. offline_bundle/claude-code-2.1.179/manifest.json
+   Purpose: Anthropic release manifest with per-platform binary checksums.
+   Source: https://downloads.claude.ai/claude-code-releases/2.1.179/manifest.json
+   Size: 1467 bytes
+   SHA256: 2cc7a0f88e3cb1cd6078b41a75b7a4c7d9c415d7517b07a50c31666a05b8767f
+
+5. offline_bundle/claude-code-2.1.179/manifest.json.sig
+   Purpose: Signature for Anthropic release manifest.
+   Source: https://downloads.claude.ai/claude-code-releases/2.1.179/manifest.json.sig
+   Size: 833 bytes
+   SHA256: 1fd9aff022d8c5bf8ade20d14965f3c896bd1364f35b7238d94f743f4e1f7be1
+
+6. offline_bundle/claude-code-2.1.179/claude-code.asc
+   Purpose: Anthropic signing public key.
+   Source: https://downloads.claude.ai/keys/claude-code.asc
+   Expected fingerprint: 31DD DE24 DDFA B679 F42D 7BD2 BAA9 29FF 1A7E CACE
+   Size: 1688 bytes
+   SHA256: bd70a5e4a268002704024ceba7f8446024114e94f3f0bdd11c23a9e592be81c6
+
+7. offline_bundle/scripts/install_claude_offline.sh
+   Purpose: Rootless offline installer. Extracts package/claude into ~/.local/bin/claude.
+   Size: 2838 bytes
+   SHA256: 9fe4fa2d4ce22c39c76a31126b5037eabfbbc4d74520f9a81da0d64dd9885ffe
+
+Primary offline install command:
+
+  cd /home/fzq
+  chmod +x offline_bundle/scripts/install_claude_offline.sh
+  offline_bundle/scripts/install_claude_offline.sh
+  export PATH="$HOME/.local/bin:$PATH"
+  claude --version
+
+Manual install command:
+
+  mkdir -p "$HOME/.local/bin" "$HOME/.claude"
+  tmpdir="$(mktemp -d)"
+  tar -xzf offline_bundle/npm-tarballs/anthropic-ai-claude-code-linux-x64-2.1.179.tgz -C "$tmpdir"
+  install -m 0755 "$tmpdir/package/claude" "$HOME/.local/bin/claude"
+  rm -rf "$tmpdir"
+  export PATH="$HOME/.local/bin:$PATH"
+  claude --version
