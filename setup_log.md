@@ -401,7 +401,237 @@ ssh fzq@192.168.222.138 'sha256sum /home/fzq/claude-code-offline-bundle-2.1.179-
 
 - 本地交付包：`claude-code-offline-bundle-2.1.179-linux-x64.tar.gz`
 - 大小：约 `97M`
-- SHA256：`3f5c33ff3169ee2dbbd62055678a30652cad92836930c8e1fe4f00f5eb497bd2`
+- SHA256：最终交付包哈希写入同目录旁车文件 `claude-code-offline-bundle-2.1.179-linux-x64.tar.gz.sha256`
 - 远程保存位置：`/home/fzq/claude-code-offline-bundle-2.1.179-linux-x64.tar.gz`
 - 远程 SHA256 与本地一致
 - 远程 `claude --version`：`2.1.179 (Claude Code)`
+
+## 2026-06-18 内网测试服务器复测记录
+
+25. 连接新的测试服务器并做只读探测。
+
+目标：
+
+- SSH：`fzq@192.168.124.2 -p 2222`
+- 系统：`Kylin V10 SP1`
+- 内核：`5.4.18-142-generic`
+- 架构：`x86_64`
+- 工具：`node`、`npm`、`curl`、`timeout`、`unshare`、`bwrap`、`sudo` 可用
+- 初始状态：未安装 `claude`，无 `~/.claude/settings.json`
+
+验证结果：
+
+- `unshare -Urn` 可用，可只让当前子进程断网。
+- 在 `unshare -Urn` 子进程里访问 `https://api.anthropic.com` 解析失败，说明断网模拟生效。
+- 该方式不修改系统网络、防火墙、路由，不影响当前 SSH 连接。
+
+26. 上传并校验本地离线包。
+
+```text
+本地包：claude-code-offline-bundle-2.1.179-linux-x64.tar.gz
+远端路径：/home/fzq/claude-code-offline-bundle-2.1.179-linux-x64.tar.gz
+大小/SHA256：以同目录旁车文件 `claude-code-offline-bundle-2.1.179-linux-x64.tar.gz.sha256` 为准
+```
+
+27. 解包并在子进程断网环境中运行离线安装脚本。
+
+```bash
+cd "$HOME"
+tar -xzf claude-code-offline-bundle-2.1.179-linux-x64.tar.gz
+chmod +x offline_bundle/scripts/install_claude_offline.sh
+timeout 90 unshare -Urn bash -lc 'cd "$HOME"; offline_bundle/scripts/install_claude_offline.sh'
+export PATH="$HOME/.local/bin:$PATH"
+claude --version
+sha256sum "$HOME/.local/bin/claude"
+```
+
+结果：
+
+```text
+/home/fzq/.local/bin/claude
+2.1.179 (Claude Code)
+6d8422de5ac8ac2077b20e2a6307083f85609aaf45f8c783ec2f7d71e8781e70  /home/fzq/.local/bin/claude
+```
+
+28. 运行/连接阶段断网模拟。
+
+```bash
+timeout 25 unshare -Urn bash -lc 'export PATH="$HOME/.local/bin:$PATH"; claude -p "ping"'
+```
+
+结果：
+
+```text
+Not logged in - Please run /login
+```
+
+说明：
+
+- 未配置 API key 或登录态时，Claude Code 会先在本地鉴权状态处失败，不会进入真实模型调用。
+- 给 dummy key 后在断网命名空间中执行 `claude --bare -p "ping"` 会卡到超时，符合“尝试连接但无可达 API”的表现。
+- 不能通过本项目脚本跳过 Anthropic/API 鉴权；内网真实使用仍需要合法内网代理/API 地址和凭据。
+
+29. 新增辅助脚本。
+
+新增 `offline_bundle/scripts/run_claude_netless.sh`，用于复测时对子进程断网：
+
+```bash
+chmod +x offline_bundle/scripts/run_claude_netless.sh
+offline_bundle/scripts/run_claude_netless.sh --version
+offline_bundle/scripts/run_claude_netless.sh -p "ping"
+```
+
+30. OpenAI-compatible API 真实调用测试。
+
+用户提供：
+
+- API 地址：`https://api.aigc369.com/v1`
+- 模型：`gpt-4o`
+- API key：仅通过当前远程进程环境变量传入，未落盘，日志不记录明文
+
+直接使用 Claude Code：
+
+```bash
+export ANTHROPIC_BASE_URL="https://api.aigc369.com/v1"
+export ANTHROPIC_API_KEY="<not persisted>"
+claude --bare --model gpt-4o -p 'Reply exactly: SIMPLE_OK'
+```
+
+结果：
+
+```text
+There's an issue with the selected model (gpt-4o). It may not exist or you may not have access to it. Run --model to pick a different model.
+```
+
+排查：
+
+- `POST /v1/chat/completions` 返回 200。
+- `POST /v1/messages` 返回 200，能返回 Anthropic 风格 `message`。
+- `POST /v1/messages/count_tokens` 返回 404：`Invalid URL (POST /v1/messages/count_tokens)`。
+
+结论：该上游具备部分 Anthropic messages 兼容能力，但缺少 Claude Code 依赖的 `messages/count_tokens`。需要本地适配器补齐该端点。
+
+31. 本地适配器测试。
+
+新增 `offline_bundle/scripts/run_claude_openai_compat.sh`：
+
+- 默认上游：`https://api.aigc369.com/v1`
+- 默认模型：`gpt-4o`
+- 启动临时 `127.0.0.1` 适配器。
+- 对 `/messages/count_tokens` 返回本地估算 token。
+- 对 `/messages` 原样转发上游。
+- API key 只从当前环境变量读取，不写入文件。
+
+远程测试：
+
+```bash
+export ANTHROPIC_API_KEY="<not persisted>"
+export OPENAI_COMPAT_BASE_URL="https://api.aigc369.com/v1"
+export API_MODEL="gpt-4o"
+offline_bundle/scripts/run_claude_openai_compat.sh -p 'Reply exactly: SIMPLE_OK'
+```
+
+结果：
+
+```text
+SIMPLE_OK
+```
+
+工具调用测试：
+
+```bash
+cat > hello_local.sh <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+printf 'LOCAL_TOOL_OK\n'
+printf 'PWD=%s\n' "$(pwd)"
+printf 'ARG1=%s\n' "${1:-}"
+SH
+chmod +x hello_local.sh
+
+offline_bundle/scripts/run_claude_openai_compat.sh \
+  --allowedTools 'Bash(./hello_local.sh *)' \
+  -p 'Use the Bash tool to execute ./hello_local.sh smoke. Then reply with exactly the stdout from the command and nothing else.'
+```
+
+结果：
+
+```text
+LOCAL_TOOL_OK
+PWD=/tmp/tmp.dmVZhREbVz
+ARG1=smoke
+```
+
+32. 升级为纯 OpenAI-compatible 转换器。
+
+需求变更：内网只保证 OpenAI-compatible `/chat/completions`，不保证 Anthropic `/messages`。因此将 `offline_bundle/scripts/run_claude_openai_compat.sh` 从“补 `messages/count_tokens` 并转发 `/messages`”升级为完整协议转换：
+
+- Claude Code -> 本地适配器：Anthropic `/v1/messages`
+- 本地适配器 -> 上游：OpenAI-compatible `/v1/chat/completions`
+- Anthropic `tools` -> OpenAI `tools`
+- OpenAI `tool_calls` -> Anthropic `tool_use`
+- Anthropic `tool_result` -> OpenAI `tool` message
+- `messages/count_tokens` -> 本地估算 token
+
+远程测试仍使用：
+
+- API 地址：`https://api.aigc369.com/v1`
+- 模型：`gpt-4o`
+- API key：只通过当前进程环境变量传入，未落盘
+
+简单问答：
+
+```bash
+OPENAI_COMPAT_BASE_URL='https://api.aigc369.com/v1' \
+API_MODEL='gpt-4o' \
+offline_bundle/scripts/run_claude_openai_compat.sh \
+  -p 'Reply exactly: OPENAI_ADAPTER_OK'
+```
+
+结果：
+
+```text
+OPENAI_ADAPTER_OK
+```
+
+`ls` 工具调用：
+
+```bash
+printf 'alpha\n' > a.txt
+printf 'beta\n' > b.txt
+OPENAI_COMPAT_BASE_URL='https://api.aigc369.com/v1' \
+API_MODEL='gpt-4o' \
+offline_bundle/scripts/run_claude_openai_compat.sh \
+  --allowedTools 'Bash(ls *)' \
+  -p 'Use the Bash tool to run ls -1. Then reply with exactly the command stdout and nothing else.'
+```
+
+结果：
+
+```text
+a.txt
+b.txt
+```
+
+`ll` 说明：
+
+- 直接运行 `ll` 失败：`bash: ll：未找到命令`。
+- 原因是 `ll` 通常是交互 shell alias，非交互 Bash 工具环境不一定加载。
+- 用函数形式可通过：
+
+```bash
+OPENAI_COMPAT_BASE_URL='https://api.aigc369.com/v1' \
+API_MODEL='gpt-4o' \
+offline_bundle/scripts/run_claude_openai_compat.sh \
+  --allowedTools 'Bash(bash -lc *)' \
+  -p 'Use the Bash tool to run exactly: bash -lc "ll(){ ls -la; }; ll". Then reply with exactly the command stdout and nothing else.'
+```
+
+结果包含：
+
+```text
+总用量 24
+drwx------  2 fzq  fzq   4096 ...
+-rw-rw-r--  1 fzq  fzq      6 ... a.txt
+-rw-rw-r--  1 fzq  fzq      5 ... b.txt
+```

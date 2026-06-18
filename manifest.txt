@@ -58,6 +58,18 @@ Required bundle files:
    Size: 2838 bytes
    SHA256: 9fe4fa2d4ce22c39c76a31126b5037eabfbbc4d74520f9a81da0d64dd9885ffe
 
+8. offline_bundle/scripts/run_claude_netless.sh
+   Purpose: Run Claude Code in a child network namespace for no-network validation without changing SSH, routing, or firewall state.
+   Size: 752 bytes
+   SHA256: 54d1b016887b5120285237c076266c80ad4c664d74e2bf0871cae2cc18ac4c4a
+
+9. offline_bundle/scripts/run_claude_openai_compat.sh
+   Purpose: Run Claude Code through a local adapter that converts Anthropic messages/tool calls to OpenAI-compatible /chat/completions. API keys are read from the current environment and are not written to disk.
+   Default upstream: https://api.aigc369.com/v1
+   Default model: gpt-4o
+   Size: 12429 bytes
+   SHA256: 749cee1d87a46779b3c7e705eb135ee30083c8e820c7ffb2c6236d314798363f
+
 Primary offline install command:
 
   cd /home/fzq

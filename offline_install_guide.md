@@ -160,6 +160,60 @@ gpg --verify offline_bundle/claude-code-2.1.179/manifest.json.sig offline_bundle
 
 如已有 `~/.claude/settings.json`，脚本不会覆盖，需要手动合并这些环境变量。
 
+## 子进程断网验证
+
+如需模拟“安装完成后完全无外网”的运行环境，且不影响当前 SSH 连接，可使用随包脚本：
+
+```bash
+chmod +x offline_bundle/scripts/run_claude_netless.sh
+offline_bundle/scripts/run_claude_netless.sh --version
+offline_bundle/scripts/run_claude_netless.sh -p "ping"
+```
+
+该脚本使用 `unshare -Urn` 只隔离当前 Claude Code 子进程的网络命名空间，不修改系统路由、防火墙或 SSH 连接。它适合验证启动、版本、配置加载和非必要外联是否被阻断。
+
+注意：断网脚本不会、也不能绕过 Anthropic/API 鉴权。未配置合法凭据时，`claude -p` 会报未登录或连接失败；真实模型对话仍需要可达的 Anthropic/Bedrock/Vertex/内网代理 API，并配置相应的 `ANTHROPIC_BASE_URL`、`ANTHROPIC_API_KEY` 或对应云厂商凭据。
+
+## OpenAI-compatible API 适配
+
+Claude Code 会调用 Anthropic `messages`、`messages/count_tokens` 和 Anthropic 风格工具调用。若内网只提供 OpenAI-compatible 服务，可使用本地适配器把 Claude Code 请求转换为 OpenAI `/chat/completions`。
+
+本包提供本地临时适配器：
+
+```bash
+export ANTHROPIC_API_KEY="只在当前 shell 设置，不写入文件"
+export OPENAI_COMPAT_BASE_URL="https://api.aigc369.com/v1"
+export API_MODEL="gpt-4o"
+
+chmod +x offline_bundle/scripts/run_claude_openai_compat.sh
+offline_bundle/scripts/run_claude_openai_compat.sh -p "Reply exactly: OK"
+```
+
+工具调用测试示例：
+
+```bash
+cat > /tmp/hello_local.sh <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+printf 'LOCAL_TOOL_OK\n'
+SH
+chmod +x /tmp/hello_local.sh
+
+cd /tmp
+offline_bundle/scripts/run_claude_openai_compat.sh \
+  --allowedTools 'Bash(/tmp/hello_local.sh)' \
+  -p 'Use the Bash tool to execute /tmp/hello_local.sh, then reply with only the command stdout.'
+```
+
+说明：
+
+- `ANTHROPIC_API_KEY` 只从当前进程环境读取，不写入 `settings.json` 或脚本。
+- 适配器只监听 `127.0.0.1`，随 Claude Code 进程退出自动删除临时文件。
+- `OPENAI_COMPAT_BASE_URL` 填 OpenAI-compatible 根路径，例如 `https://api.aigc369.com/v1`；不要拼 `/chat/completions`。
+- 适配器会把 Anthropic `messages`、`tools`、`tool_use`、`tool_result` 转换到 OpenAI `chat/completions`、`tools`、`tool_calls`。
+- `API_MODEL` 可以按内网实际服务修改，例如 `gpt-4o`。
+- `ll` 通常是交互 shell 的 alias，不一定能被非交互 Bash 直接识别；建议使用 `ls -la`，或显式定义函数后调用：`bash -lc 'll(){ ls -la; }; ll'`。
+
 
 export PATH="$HOME/.local/bin:$PATH"
 

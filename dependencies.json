@@ -81,6 +81,21 @@
       "sizeBytes": 2838,
       "sha256": "9fe4fa2d4ce22c39c76a31126b5037eabfbbc4d74520f9a81da0d64dd9885ffe",
       "command": "offline_bundle/scripts/install_claude_offline.sh"
+    },
+    {
+      "path": "offline_bundle/scripts/run_claude_netless.sh",
+      "sizeBytes": 752,
+      "sha256": "54d1b016887b5120285237c076266c80ad4c664d74e2bf0871cae2cc18ac4c4a",
+      "command": "offline_bundle/scripts/run_claude_netless.sh --version"
+    },
+    {
+      "path": "offline_bundle/scripts/run_claude_openai_compat.sh",
+      "sizeBytes": 12429,
+      "sha256": "749cee1d87a46779b3c7e705eb135ee30083c8e820c7ffb2c6236d314798363f",
+      "command": "ANTHROPIC_API_KEY=<not persisted> offline_bundle/scripts/run_claude_openai_compat.sh -p \"Reply exactly: OK\"",
+      "defaultUpstream": "https://api.aigc369.com/v1",
+      "defaultModel": "gpt-4o",
+      "adapterMode": "anthropic-messages-to-openai-chat-completions"
     }
   ],
   "offlineEnvironment": {
