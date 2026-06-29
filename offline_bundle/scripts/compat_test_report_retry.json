@@ -1,0 +1,20 @@
+{
+  "rc": 0,
+  "timed_out": false,
+  "duration_s": 22.4,
+  "stdout": "## Summary\n\n| Step | Result |\n|------|--------|\n| **1. Created `buggy.py`** | `add(a, b)` returned `a - b` 鈥� an intentional off-by-one-logic bug. |\n| **2. Created `test_buggy.py`** | 4 test cases: positive, negative, mixed sign, and zero. |\n| **3. Ran tests (before fix)** | 鉂� **4 failed** 鈥� all assertions failed because subtraction gave wrong results. |\n| **4. Fixed the bug** | Changed `return a - b` 鈫� `return a + b` in `buggy.py`. |\n| **5. Ran tests (after fix)** | 鉁� **4 passed** 鈥� all assertions now hold. |\n\nThe bug was using the wrong operator (`-` instead of `+`). Once corrected, the `add()` function correctly returns the sum of its two arguments and all tests pass. All file changes are confined to the working directory.\n",
+  "stderr": "",
+  "workdir": "C:\\Users\\24203\\AppData\\Local\\Temp\\claude_bugfix_1uilmtoc",
+  "files": [
+    {
+      "name": "buggy.py",
+      "size": 117,
+      "prefix": "def add(a, b):\n    \"\"\"Return the sum of a and b.\"\"\"\n    return a + b  # FIXED: using addition instead of subtraction\n"
+    },
+    {
+      "name": "test_buggy.py",
+      "size": 297,
+      "prefix": "import pytest\nfrom buggy import add\n\n\ndef test_add_positive():\n    assert add(2, 3) == 5\n\n\ndef test_add_negative():\n    assert add(-1, -2) == -3\n\n\ndef test_add_mixed():\n    assert add(5, -3) == 2\n\n\ndef test_add_zero():\n    assert add(0, 0) == 0\n    assert add(7, 0) == 7\n    assert add(0, 4) == 4\n"
+    }
+  ]
+}
